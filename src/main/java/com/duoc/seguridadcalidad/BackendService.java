@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -120,6 +121,134 @@ public List<Map<String, Object>> getAppointments(String jwtToken) {
             return response;
         } catch (HttpStatusCodeException ex) {
             log.error("Backend createAppointment failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public List<Map<String, Object>> getPets() {
+        log.debug("-> BackendService.getPets");
+        try {
+            ResponseEntity<Map[]> response = restTemplate.exchange(
+                    backendBaseUrl + "/pets",
+                    HttpMethod.GET,
+                    null,
+                    Map[].class
+            );
+            log.debug("<- BackendService.getPets status={} body={}", response.getStatusCode(), Arrays.toString(response.getBody()));
+            if (response.getBody() == null) {
+                return Collections.emptyList();
+            }
+            return Arrays.asList(response.getBody());
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend getPets failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public List<Map<String, Object>> getAvailablePets() {
+        log.debug("-> BackendService.getAvailablePets");
+        try {
+            ResponseEntity<Map[]> response = restTemplate.exchange(
+                    backendBaseUrl + "/pets/available",
+                    HttpMethod.GET,
+                    null,
+                    Map[].class
+            );
+            log.debug("<- BackendService.getAvailablePets status={} body={}", response.getStatusCode(), Arrays.toString(response.getBody()));
+            if (response.getBody() == null) {
+                return Collections.emptyList();
+            }
+            return Arrays.asList(response.getBody());
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend getAvailablePets failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public List<Map<String, Object>> searchPets(String species, String gender, String location, Integer age, String status) {
+        String uri = UriComponentsBuilder
+            .fromUriString(backendBaseUrl + "/pets/search")
+                .queryParamIfPresent("species", java.util.Optional.ofNullable(species))
+                .queryParamIfPresent("gender", java.util.Optional.ofNullable(gender))
+                .queryParamIfPresent("location", java.util.Optional.ofNullable(location))
+                .queryParamIfPresent("age", java.util.Optional.ofNullable(age))
+                .queryParamIfPresent("status", java.util.Optional.ofNullable(status))
+                .build()
+                .toUriString();
+
+        log.debug("-> BackendService.searchPets uri={}", uri);
+        try {
+            ResponseEntity<Map[]> response = restTemplate.exchange(
+                    uri,
+                    HttpMethod.GET,
+                    null,
+                    Map[].class
+            );
+            log.debug("<- BackendService.searchPets status={} body={}", response.getStatusCode(), Arrays.toString(response.getBody()));
+            if (response.getBody() == null) {
+                return Collections.emptyList();
+            }
+            return Arrays.asList(response.getBody());
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend searchPets failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public Map<String, Object> createPet(String jwtToken, Map<String, Object> pet) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(pet, headers);
+
+        log.debug("-> BackendService.createPet Authorization=Bearer {} pet={}", jwtToken, pet);
+        try {
+            Map response = restTemplate.postForObject(backendBaseUrl + "/pets", entity, Map.class);
+            log.debug("<- BackendService.createPet response={}", response);
+            return response;
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend createPet failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public Map<String, Object> updatePet(String jwtToken, Integer id, Map<String, Object> pet) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(pet, headers);
+
+        log.debug("-> BackendService.updatePet Authorization=Bearer {} id={} pet={}", jwtToken, id, pet);
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    backendBaseUrl + "/pets/" + id,
+                    HttpMethod.PUT,
+                    entity,
+                    Map.class
+            );
+            log.debug("<- BackendService.updatePet status={} body={}", response.getStatusCode(), response.getBody());
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend updatePet failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw ex;
+        }
+    }
+
+    public Map<String, Object> deletePet(String jwtToken, Integer id) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(jwtToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        log.debug("-> BackendService.deletePet Authorization=Bearer {} id={}", jwtToken, id);
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    backendBaseUrl + "/pets/" + id,
+                    HttpMethod.DELETE,
+                    entity,
+                    Map.class
+            );
+            log.debug("<- BackendService.deletePet status={} body={}", response.getStatusCode(), response.getBody());
+            return response.getBody();
+        } catch (HttpStatusCodeException ex) {
+            log.error("Backend deletePet failed status={} body={}", ex.getStatusCode(), ex.getResponseBodyAsString());
             throw ex;
         }
     }

@@ -18,6 +18,7 @@
             
             <a id="btnPatients" th:href="@{/patients}" class="btn btn-primary" style="display:none;">Ver Pacientes</a>
             <a id="btnAppointments" th:href="@{/appointments}" class="btn btn-primary" style="display:none;">Ver Citas</a>
+            <a id="btnPets" th:href="@{/pets}" class="btn btn-primary" style="display:none;">Ver Mascotas</a>
             <button id="btnLogout" class="btn btn-secondary" style="display:none;">Cerrar Sesión</button>
         </div>
     </div>
@@ -30,6 +31,7 @@
                 // Usuario Logeado
                 document.getElementById('btnPatients').style.display = 'inline-block';
                 document.getElementById('btnAppointments').style.display = 'inline-block';
+                document.getElementById('btnPets').style.display = 'inline-block';
                 document.getElementById('btnLogout').style.display = 'inline-block';
             } else {
                 // Usuario No Logeado
